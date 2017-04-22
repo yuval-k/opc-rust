@@ -140,6 +140,7 @@ impl Encoder for OPCCodec {
     type Item = OpcMessage;
     type Error = std::io::Error;
 
+
     fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
 
         let data: Vec<u8> = item.into();
@@ -189,7 +190,7 @@ mod tests {
             pixel.set_b(3);
         }
         let msg = OpcMessage::new(1, OpcMessageData::SetPixelColours(p));
-        let mut expect_pixels_vec = vec![1u8,// channel
+        let expect_pixels_vec = vec![1u8,// channel
         0,   // command
         0,3, // size
         1,2,3];

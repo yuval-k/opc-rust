@@ -1,7 +1,8 @@
 [package]
-name = "opc"
+name = "tk-opc"
 version = "0.1.0"
 authors = ["Yuval Kohavi <yuval.kohavi@gmail.com>"]
+description = "Minimal copy implementation for OpenPixelControl with tokio encoder/decoder"
 
 [dependencies]
 bytes = "0.4"
