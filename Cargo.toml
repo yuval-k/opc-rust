@@ -1,6 +1,6 @@
 [package]
 name = "tk-opc"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Yuval Kohavi <yuval.kohavi@gmail.com>"]
 description = "Minimal copy implementation for OpenPixelControl with tokio encoder/decoder"
 license = "MIT"
