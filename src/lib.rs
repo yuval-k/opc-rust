@@ -44,19 +44,41 @@ impl OpcMessage {
 
 const OPC_HEADER_LENGTH: usize = 4;
 
-struct OpcHeader {
-    channel: u8,
-    command: u8,
-    length: u16,
+pub struct OpcHeader {
+    pub channel: u8,
+    pub command: u8,
+    pub length: u16,
 }
 
 impl OpcHeader {
-    fn new(buf : &[u8]) -> Self {
+    pub fn new(buf: &[u8]) -> Self {
         OpcHeader {
-                channel: buf[0],
-                command: buf[1],
-                length: (((buf[2] as u16) << 8) + (buf[3] as u16)),
-            }
+            channel: buf[0],
+            command: buf[1],
+            length: (((buf[2] as u16) << 8) + (buf[3] as u16)),
+        }
+    }
+
+    pub fn read_header<T: std::io::Read>(r: &mut T) -> std::io::Result<Self> {
+        let mut buf = [0u8; 4];
+        r.read_exact(&mut buf)?;
+
+        Ok(OpcHeader {
+            channel: buf[0],
+            command: buf[1],
+            length: (((buf[2] as u16) << 8) + (buf[3] as u16)),
+        })
+    }
+
+    pub fn write_header<T: std::io::Write>(&self, w: &mut T) -> std::io::Result<()> {
+
+        let len1: u8 = ((self.length >> 8) & 0xff) as u8;
+        let len2: u8 = (self.length & 0xff) as u8;
+
+        let buf = [self.channel, self.command, len1, len2];
+        w.write_all(&buf)?;
+
+        Ok(())
     }
 }
 

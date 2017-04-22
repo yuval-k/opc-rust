@@ -44,4 +44,3 @@ impl std::convert::From<SystemExclusiveData> for Vec<u8> {
         t.sys_exclusive
     }
 }
-
