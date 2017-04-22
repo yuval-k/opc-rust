@@ -3,6 +3,8 @@ name = "tk-opc"
 version = "0.1.0"
 authors = ["Yuval Kohavi <yuval.kohavi@gmail.com>"]
 description = "Minimal copy implementation for OpenPixelControl with tokio encoder/decoder"
+license = "MIT"
+repository = "https://github.com/yuval-k/opc-rust"
 
 [dependencies]
 bytes = "0.4"
