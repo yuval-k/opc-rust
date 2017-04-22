@@ -44,6 +44,7 @@ impl<'a, T: AsRef<[u8]> + 'a> std::convert::From<&'a OpcPixel<'a, T>> for (u8, u
     }
 }
 
+#[derive(Clone,Debug)]
 pub struct Pixels {
     pixels: Vec<u8>,
 }
@@ -77,7 +78,6 @@ impl Pixels {
     }
 }
 
-
 pub struct PixelIterator<'a> {
     p: std::slice::Chunks<'a, u8>,
 }
@@ -94,6 +94,11 @@ impl<'a> std::iter::Iterator for PixelIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.p.next().map(|x| OpcPixel::new(x))
     }
+
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        self.p.nth(n).map(|x| OpcPixel::new(x))
+    }
+
 }
 
 impl<'a> ExactSizeIterator for PixelIterator<'a> {
@@ -118,6 +123,11 @@ impl<'a> std::iter::Iterator for PixelIteratorMut<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.p.next().map(|x| OpcPixel::new(x))
     }
+
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        self.p.nth(n).map(|x| OpcPixel::new(x))
+    }
+
 }
 
 impl<'a> ExactSizeIterator for PixelIteratorMut<'a> {

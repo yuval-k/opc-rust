@@ -1,5 +1,6 @@
 use std;
 
+#[derive(Clone,Debug)]
 pub struct SystemExclusiveData {
     sys_exclusive: Vec<u8>,
 }

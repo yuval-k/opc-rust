@@ -12,6 +12,7 @@ pub struct OPCCodec;
 pub use pixel::Pixels;
 pub use sysexclusive::SystemExclusiveData;
 
+#[derive(Clone,Debug)]
 pub enum OpcMessageData {
     SetPixelColours(Pixels),
     Other(u8, Vec<u8>),
@@ -28,13 +29,14 @@ impl std::convert::From<OpcMessageData> for Vec<u8> {
     }
 }
 
+#[derive(Clone,Debug)]
 pub struct OpcMessage {
     pub channel: u8,
     pub message: OpcMessageData,
 }
 
 impl OpcMessage {
-    fn new(channel: u8, msg: OpcMessageData) -> Self {
+    pub fn new(channel: u8, msg: OpcMessageData) -> Self {
         OpcMessage {
             channel: channel,
             message: msg,
@@ -44,6 +46,7 @@ impl OpcMessage {
 
 const OPC_HEADER_LENGTH: usize = 4;
 
+#[derive(Copy,Clone,Debug)]
 pub struct OpcHeader {
     pub channel: u8,
     pub command: u8,
