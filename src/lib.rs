@@ -15,9 +15,20 @@ pub use sysexclusive::SystemExclusiveData;
 #[derive(Clone,Debug)]
 pub enum OpcMessageData {
     SetPixelColours(Pixels),
-    Other(u8, Vec<u8>),
     SystemExclusive(SystemExclusiveData),
+    Other(u8, Vec<u8>),
 }
+
+impl OpcMessageData {
+    fn len(&self) -> usize {
+        match *self {
+            OpcMessageData::SetPixelColours(ref pixels) => pixels.len_bytes(),
+            OpcMessageData::SystemExclusive(ref sysdata) => sysdata.len_bytes(),
+            OpcMessageData::Other(_, ref data) => data.len(),
+        }
+    }
+}
+
 
 impl std::convert::From<OpcMessageData> for Vec<u8> {
     fn from(t: OpcMessageData) -> Vec<u8> {
@@ -42,6 +53,20 @@ impl OpcMessage {
             message: msg,
         }
     }
+
+    pub fn header(&self) -> OpcHeader {
+        let command = match self.message {
+            OpcMessageData::SetPixelColours(_) => 0,
+            OpcMessageData::SystemExclusive(_) => 255,
+            OpcMessageData::Other(cmd, _) => cmd,
+        };
+
+        OpcHeader {
+ channel: self.channel,
+     command: command,
+     length: self.message.len() as u16,
+}   
+    }
 }
 
 const OPC_HEADER_LENGTH: usize = 4;
@@ -55,6 +80,7 @@ pub struct OpcHeader {
 
 impl OpcHeader {
     pub fn new(buf: &[u8]) -> Self {
+        
         OpcHeader {
             channel: buf[0],
             command: buf[1],
@@ -73,12 +99,15 @@ impl OpcHeader {
         })
     }
 
-    pub fn write_header<T: std::io::Write>(&self, w: &mut T) -> std::io::Result<()> {
-
+    pub fn to_bytes(&self) -> [u8;4] {
         let len1: u8 = ((self.length >> 8) & 0xff) as u8;
         let len2: u8 = (self.length & 0xff) as u8;
 
-        let buf = [self.channel, self.command, len1, len2];
+        [self.channel, self.command, len1, len2]
+    }
+
+    pub fn write_header<T: std::io::Write>(&self, w: &mut T) -> std::io::Result<()> {
+        let buf = self.to_bytes();
         w.write_all(&buf)?;
 
         Ok(())
@@ -101,31 +130,6 @@ fn verify_vec_size(d: Vec<u8>) -> Vec<u8> {
     }
     d
 }
-
-impl From<OpcMessage> for Vec<u8> {
-    fn from(m: OpcMessage) -> Vec<u8> {
-        let channel: u8 = m.channel;
-        let command = match m.message {
-            OpcMessageData::SetPixelColours(_) => 0,
-            OpcMessageData::SystemExclusive(_) => 255,
-            OpcMessageData::Other(cmd, _) => cmd,
-        };
-
-        let data: Vec<u8> = m.message.into();
-        let data = verify_vec_size(data);
-        let datalen = data.len();
-        let len1: u8 = ((datalen >> 8) & 0xff) as u8;
-        let len2: u8 = (datalen & 0xff) as u8;
-
-        let mut msg = Vec::new();
-        msg.reserve_exact(OPC_HEADER_LENGTH + datalen);
-
-        msg.extend_from_slice(&[channel, command, len1, len2]);
-        msg.extend(data);
-        msg
-    }
-}
-
 
 impl Decoder for OPCCodec {
     type Item = OpcMessage;
@@ -168,7 +172,16 @@ impl Encoder for OPCCodec {
 
     fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
 
-        let data: Vec<u8> = item.into();
+        let mut header = item.header();
+
+        let data: Vec<u8> = item.message.into();
+        let data = verify_vec_size(data);
+        let datalen = data.len();
+        
+        header.length = datalen as u16;
+        let headerbuf = header.to_bytes();
+
+        dst.extend(&headerbuf);
         dst.extend(data);
 
         Ok(())

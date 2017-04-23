@@ -69,6 +69,10 @@ impl Pixels {
         Pixels { pixels: vec![0;n*NUM_RGB_BYTES] }
     }
 
+    pub fn len_bytes(&self) -> usize {
+        self.pixels.len()
+    }
+
     pub fn iter(&self) -> PixelIterator {
         PixelIterator::new(self)
     }

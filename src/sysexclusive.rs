@@ -16,6 +16,9 @@ impl SystemExclusiveData {
         SystemExclusiveData { sys_exclusive: header }
     }
 
+    pub fn len_bytes(&self) -> usize {
+        self.sys_exclusive.len()
+    }
     pub fn get_system_id(&self) -> u16 {
         if self.sys_exclusive.len() < 2 {
             0
